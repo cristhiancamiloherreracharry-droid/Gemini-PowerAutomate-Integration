@@ -35,40 +35,49 @@ graph TD
         E -- Notificación --> F[Gmail Service]
         E -- Logs --> G[Historial de Ejecuciones]
     end
+```
 
-⚙️ Configuración del Orquestador (Power Automate)
+## ⚙️ Configuración del Orquestador (Power Automate)
 El flujo en la nube está diseñado para ser agnóstico al cliente. La configuración técnica implementada es:
 
 Trigger: When a HTTP request is received.
 
 Contrato de Datos (JSON Schema):
 
-JSON
+```json
 {
     "accion": "string",
     "resumen_ticket": "string",
     "prioridad": "string"
 }
+```
 Capa de Salida: Integración con Gmail - Send email (V2). Utiliza tokens dinámicos para automatizar el asunto y cuerpo del mensaje basándose en la salida de la IA.
 
 🚀 Instalación y Despliegue
+
 Clonar el repositorio:
 
-Bash
-git clone [https://github.com/tu-usuario/Enterprise-AI-Orchestrator.git](https://github.com/tu-usuario/Enterprise-AI-Orchestrator.git)
+```bash
+git clone https://github.com/tu-usuario/Enterprise-AI-Orchestrator.git
 cd Enterprise-AI-Orchestrator
+```
+
 Configurar entorno virtual:
 
-Bash
+```bash
 python -m venv .venv
 ./.venv/Scripts/activate  # En Windows
 pip install -r requirements.txt
+```
+
 Variables de Entorno (.env):
+
 Crea un archivo .env con tus credenciales:
 
-Fragmento de código
+```
 GEMINI_API_KEY=tu_google_api_key
 POWER_AUTOMATE_URL=tu_webhook_url
+```
 🛡️ Seguridad
 Protección de Datos: Se incluye .gitignore para evitar la subida de secretos (.env) al control de versiones.
 
