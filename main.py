@@ -20,8 +20,8 @@ def procesar_con_ia(mensaje_usuario):
     """
     Usa Gemini para transformar lenguaje natural en un JSON estructurado.
     """
-    # Usamos la ruta completa del modelo para evitar el error 404
-    model = genai.GenerativeModel('models/gemini-1.5-flash')
+    # Usamos gemini-2.5-flash-lite (versión gratuita/económica)
+    model = genai.GenerativeModel('models/gemini-2.5-flash-lite')
     
     prompt = f"""
     Eres un orquestador de infraestructura TI. Tu tarea es analizar el requerimiento del usuario y devolver un JSON.
@@ -38,22 +38,44 @@ def procesar_con_ia(mensaje_usuario):
     IMPORTANTE: Responde ÚNICAMENTE el objeto JSON. No agregues saludos ni explicaciones.
     """
     
-    response = model.generate_content(prompt)
-    
-    # Limpieza de la respuesta (por si la IA devuelve ```json ... ```)
-    texto_sucio = response.text.strip()
-    texto_limpio = texto_sucio.replace('```json', '').replace('```', '').strip()
-    
-    return json.loads(texto_limpio)
+    try:
+        response = model.generate_content(prompt)
+        
+        # Limpieza de la respuesta (por si la IA devuelve ```json ... ```)
+        texto_sucio = response.text.strip()
+        texto_limpio = texto_sucio.replace('```json', '').replace('```', '').strip()
+        
+        return json.loads(texto_limpio)
+    except Exception as e:
+        print(f"❌ ERROR en Gemini API: {e}")
+        print(f"   Verifica que tu API Key sea válida en .env")
+        raise
 
 def disparar_webhook(datos):
     """
     Envía el JSON procesado al Webhook de Power Automate.
     """
     headers = {'Content-Type': 'application/json'}
-    # Enviamos los datos directamente como JSON
-    response = requests.post(PA_URL, json=datos, headers=headers)
-    return response.status_code
+    
+    # DEBUG: Mostrar URL y datos
+    print(f"📍 URL del Webhook: {PA_URL}")
+    print(f"📤 Datos enviados: {json.dumps(datos, indent=2)}")
+    
+    try:
+        response = requests.post(PA_URL, json=datos, headers=headers)
+        
+        # Mostrar detalles de la respuesta
+        print(f"📥 Status Code: {response.status_code}")
+        print(f"📥 Respuesta: {response.text}")
+        
+        return response.status_code
+    except requests.exceptions.MissingSchema:
+        print("❌ ERROR: URL inválida. Verifica PA_URL en .env")
+        print(f"   Valor actual: '{PA_URL}'")
+        return None
+    except requests.exceptions.ConnectionError as e:
+        print(f"❌ ERROR de conexión: {e}")
+        return None
 
 # --- Flujo Principal ---
 if __name__ == "__main__":
